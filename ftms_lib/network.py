@@ -11,11 +11,17 @@ from .session import SessionHandler, SessionStatus
 logger = logging.getLogger(__name__)
 
 
-class Context:
+class SessionContext:
     __transport: asyncio.transports.Transport
 
     def __init__(self, transport):
         self.__transport = transport
+
+    def __enter__(self):
+        return self.__transport
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.__transport.close()
 
 
 class BaseProtocol(asyncio.Protocol, metaclass=ABCMeta):
@@ -114,14 +120,15 @@ class SessionProtocol(BaseProtocol):
 
         if params:
             await asyncio.gather(
-                *[listener.invoke(self.transport, method, raw=raw_data, **params) for listener in self.listeners])
+                *[listener.invoke(self.transport, method, session=session, raw=raw_data, **params)
+                  for listener in self.listeners])
+
         else:
             await asyncio.gather(
-                *[listener.invoke(self.transport, method, is_result=True, raw=raw_data, **result) for listener in
-                  self.listeners])
+                *[listener.invoke(self.transport, method, session=session, is_result=True, raw=raw_data, **result)
+                  for listener in self.listeners])
 
-        self.transport.write_eof()
-        self.transport.close()
+        # self.transport.close()
 
 
 class ContinuousProtocol(BaseProtocol):
@@ -137,6 +144,7 @@ class ContinuousProtocol(BaseProtocol):
         if params:
             await asyncio.gather(
                 *[listener.invoke(self.transport, method, raw=raw_data, **params) for listener in self.listeners])
+
         elif result:
             await asyncio.gather(
                 *[listener.invoke(self.transport, method, is_result=True, raw=raw_data, **result) for listener in
