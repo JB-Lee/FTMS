@@ -31,10 +31,11 @@ class Listener(metaclass=ABCMeta):
         new_cls.logger = logging.getLogger(f"{__name__}.{new_cls.__class__.__qualname__}")
         return new_cls
 
-    async def invoke(self, ctx: asyncio.transports.Transport, method: Any, is_result: bool = False, *args, **kwargs):
+    async def invoke(self, ctx: asyncio.transports.Transport, method: Any, is_result: bool = False, session: str = None,
+                     *args, **kwargs):
         func = self.__commands_result.get(method, False) if is_result else self.__commands.get(method, False)
         if func:
-            return await func(self, ctx=ctx, *args, **kwargs)
+            return await func(self, ctx=ctx, session=session, *args, **kwargs)
         else:
             logger.warning(f"Method {method}.{'RESULT' if is_result else 'CALL'} is not defined.")
             return None
