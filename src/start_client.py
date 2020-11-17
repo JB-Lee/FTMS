@@ -14,7 +14,7 @@ async def main():
     cmd_t, cmd_proto = await loop.create_connection(
         lambda: ftms_lib.ContinuousProtocol(),
         "localhost",
-        8081
+        8089
     )
     cmd_proto.pause_writing()
 

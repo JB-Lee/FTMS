@@ -1,17 +1,19 @@
 import asyncio
 import os
+from typing import Optional
 
-from ftms_lib import command, protocol
+from ftms_lib import command, protocol, SessionContext
 from ftms_lib.command import CommandType
 
 
 class Client:
-    class DataListener(command.Listener):
-        command_ctx: asyncio.transports.Transport
+    class ClientListener(command.Listener):
+        user: str
+        pw: str
 
-        def __init__(self, command_ctx):
-            super(Client.DataListener, self).__init__()
-            self.command_ctx = command_ctx
+        def __init__(self, user: str, pw: str):
+            self.user = user
+            self.pw = pw
 
         def on_create(self, ctx: asyncio.transports.Transport):
             pass
@@ -23,21 +25,28 @@ class Client:
             ctx.write(
                 protocol.ProtocolBuilder()
                     .set_method("connect")
-                    .set_session("session-01")
-                    .set_params({"user": "client-a",
-                                 "pw": "password1234"})
+                    .set_session(None)
+                    .set_params({"user": self.user,
+                                 "pw": self.pw})
                     .build()
             )
 
         def on_receive(self, ctx: asyncio.transports.Transport, data: bytes):
             pass
 
-        @command.command(method="close", command_type=CommandType.CALL)
-        async def close(self, ctx: asyncio.transports.Transport, **kwargs):
+        async def on_command(self, ctx: asyncio.transports.Transport, *args, **kwargs):
             pass
 
-        @command.command(method="sendFile", command_type=CommandType.CALL)
-        async def send_file(self, ctx: asyncio.transports.Transport, header, path, filename, data, **kwargs):
+    class DataListener(ClientListener):
+        command_ctx: asyncio.transports.Transport
+
+        def __init__(self, command_ctx, user: str, pw: str):
+            super(Client.DataListener, self).__init__(user, pw)
+            self.command_ctx = command_ctx
+
+        @command.command(method="sendFile_data", command_type=CommandType.CALL)
+        async def send_file(self, ctx: asyncio.transports.Transport, header: dict, path: str, filename: str,
+                            data: bytes, **kwargs):
             filepath = os.path.join(path, filename)
 
             success = False
@@ -58,8 +67,8 @@ class Client:
             finally:
                 ctx.write(
                     protocol.ProtocolBuilder()
-                        .set_method("sendFile")
-                        .set_session("session-01")
+                        .set_method("sendFile_data")
+                        .set_session(None)
                         .set_result({"header": header,
                                      "is_success": success})
                         .build()
@@ -70,50 +79,28 @@ class Client:
             raw_data = kwargs.get("raw")
             self.command_ctx.write(raw_data)
 
-    class CommandListener(command.Listener):
+    class CommandListener(ClientListener):
         data_ctx: asyncio.transports.Transport
 
-        def __init__(self, data_ctx):
-            super(Client.CommandListener, self).__init__()
+        def __init__(self, data_ctx, user: str, pw: str):
+            super(Client.CommandListener, self).__init__(user, pw)
             self.data_ctx = data_ctx
 
-        def on_create(self, ctx: asyncio.transports.Transport):
-            pass
-
-        def on_close(self, ctx: asyncio.transports.Transport):
-            pass
-
-        def on_receive(self, ctx: asyncio.transports.Transport, data: bytes):
-            pass
-
-        def on_register(self, ctx: asyncio.transports.Transport):
-            ctx.write(
-                protocol.ProtocolBuilder()
-                    .set_method("connect")
-                    .set_session("session-01")
-                    .set_params({"user": "client-a",
-                                 "pw": "password1234"})
-                    .build()
-            )
-
-        @command.command(method="close")
-        async def close(self, ctx: asyncio.transports.Transport, user, **kwargs):
-            pass
-
         @command.command(method="listdir", command_type=CommandType.CALL)
-        async def listdir(self, ctx: asyncio.transports.Transport, path, **kwargs):
+        async def listdir(self, ctx: asyncio.transports.Transport, header: dict, path: str, **kwargs):
             ctx.write(
                 protocol.ProtocolBuilder()
                     .set_method("listdir")
-                    .set_session("sess-01")
-                    .set_result({"dirs": os.listdir(path)})
+                    .set_session(None)
+                    .set_result({"header": header,
+                                 "dirs": os.listdir(path)})
                     .build()
             )
 
             print(path)
 
         @command.command(method="sendFile", command_type=CommandType.CALL)
-        async def send_file(self, ctx: asyncio.transports.Transport, src: dict, dst: dict, requester: str, **kwargs):
+        async def send_file(self, ctx: asyncio.transports.Transport, header: dict, src: dict, dst: dict, **kwargs):
             src_path = src.get("path")
             src_file_name = src.get("file_name")
             src_file_path = os.path.join(src_path, src_file_name)
@@ -127,37 +114,48 @@ class Client:
 
                 self.data_ctx.write(
                     protocol.ProtocolBuilder()
-                        .set_method("sendFile")
-                        .set_session("session-01")
-                        .set_params({"header": {"from": src.get('id'),
-                                                "to": dst.get("id"),
-                                                "requester": requester},
+                        .set_method("sendFile_data")
+                        .set_session(None)
+                        .set_params({"header": header,
                                      "path": dst_path,
                                      "filename": dst_file_name,
                                      "data": data})
                         .build()
                 )
+            else:
+                ctx.write(
+                    protocol.ProtocolBuilder()
+                        .set_method("sendFile")
+                        .set_session(None)
+                        .set_result({"header": header,
+                                     "is_success": False})
+                        .build()
+                )
 
-        @command.command(method="sendFile", command_type=CommandType.RESULT)
+        @command.command(method="sendFile_data", command_type=CommandType.RESULT)
         async def send_file_result(self, ctx: asyncio.transports.Transport, header: dict, is_success: bool, **kwargs):
-            raw_data = kwargs.get("raw")
-            ctx.write(raw_data)
+            ctx.write(
+                protocol.ProtocolBuilder()
+                    .set_method("sendFile")
+                    .set_session(None)
+                    .set_result({"header": header,
+                                 "is_success": is_success})
+                    .build()
+            )
 
 
 class Server:
     class ServerListener(command.Listener):
         connection: dict
-
-        client_id: str
-        client_pw: str
+        identifier: Optional[str]
 
         def on_create(self, ctx: asyncio.transports.Transport):
             pass
 
         def on_close(self, ctx: asyncio.transports.Transport):
-            if self.client_id:
-                if self.client_id in self.connection:
-                    self.connection.pop(self.client_id)
+            if self.identifier:
+                if self.identifier in self.connection:
+                    self.connection.pop(self.identifier)
 
         def on_register(self, ctx: asyncio.transports.Transport):
             pass
@@ -165,106 +163,104 @@ class Server:
         def on_receive(self, ctx: asyncio.transports.Transport, data: bytes):
             pass
 
+        async def on_command(self, ctx: asyncio.transports.Transport, *args, **kwargs):
+            pass
+
         @classmethod
         def route(cls, client_id: str) -> asyncio.transports.Transport:
-            return cls.connection.get(client_id)
+            transport = cls.connection.get(client_id)
+            return transport
 
-    class CommandListener(ServerListener):
+    class ClientCommandListener(ServerListener):
         connection: dict = dict()
+
+        def __init__(self):
+            self.identifier = None
 
         @command.command(method="connect", command_type=CommandType.CALL)
         async def connect(self, ctx, user, pw, **kwargs):
-            self.client_id = user
-            self.client_pw = pw
+            self.identifier = user
             self.connection[user] = ctx
 
             ctx.write(
                 protocol.ProtocolBuilder()
                     .set_method("connect")
-                    .set_session("session-01")
+                    .set_session(None)
                     .set_result({"is_success": True})
-                    .build()
-            )
-
-        @command.command(method="sendFile", command_type=CommandType.CALL)
-        async def send_file(self, ctx, src: dict, dst: dict, requester: str, **kwargs):
-            client_id = src.get("id")
-
-            sess = self.route(client_id)
-            sess.write(
-                protocol.ProtocolBuilder()
-                    .set_method("sendFile")
-                    .set_session("session-01")
-                    .set_params({"src": src,
-                                 "dst": dst,
-                                 "requester": requester})
                     .build()
             )
 
         @command.command(method="sendFile", command_type=CommandType.RESULT)
         async def send_file_result(self, ctx, header: dict, is_success: bool, **kwargs):
-            self.logger.debug("sendFile")
-            rid = header.get("requester")
+            raw_data = kwargs.get("raw")
+            app_id = header.get("requester")
 
-            sess = self.route(rid)
-
-            sess.write(kwargs.get("raw"))
-
-        @command.command(method="close")
-        async def close(self, ctx, hello, **kwargs):
-            print(hello)
-
-        @command.command(method="close", command_type=CommandType.RESULT)
-        async def close_result(self, ctx, hello, **kwargs):
-            print("hello")
-            print(hello)
+            with SessionContext(Server.AppCommandListener.route(app_id)) as sess:
+                sess.write(raw_data)
 
         @command.command(method="listdir", command_type=CommandType.RESULT)
-        async def listdir_result(self, ctx, dirs, **kwargs):
-            self.logger.debug("listdir")
-            print(dirs)
+        async def listdir_result(self, ctx, header: dict, dirs: list, **kwargs):
+            raw_data = kwargs.get("raw")
+            app_id = header.get("requester")
+
+            with SessionContext(Server.AppCommandListener.route(app_id)) as sess:
+                sess.write(raw_data)
+
+    class AppCommandListener(ServerListener):
+        connection: dict = dict()
+
+        def register_session(self, ctx, session):
+            self.identifier = session
+            self.connection[session] = ctx
+
+        @command.command(method="sendFile", command_type=CommandType.CALL)
+        async def send_file(self, ctx, session, header: dict, src: dict, dst: dict, **kwargs):
+            self.register_session(ctx, session)
+
+            raw_data = kwargs.get("raw")
+            client_id = header.get("from")
+
+            sess = Server.ClientCommandListener.route(client_id)
+            sess.write(raw_data)
+
+        @command.command(method="listdir", command_type=CommandType.CALL)
+        async def listdir(self, ctx, session, header: dict, path: str, **kwargs):
+            self.register_session(ctx, session)
+
+            raw_data = kwargs.get("raw")
+            client_id = header.get("from")
+
+            sess = Server.ClientCommandListener.route(client_id)
+            sess.write(raw_data)
 
     class DataListener(ServerListener):
         connection: dict = dict()
 
         @command.command(method="connect", command_type=CommandType.CALL)
         async def connect(self, ctx, user: str, pw: str, **kwargs):
-            self.client_id = user
-            self.client_pw = pw
+            self.identifier = user
             self.connection[user] = ctx
 
             ctx.write(
                 protocol.ProtocolBuilder()
                     .set_method("connect")
-                    .set_session("session-01")
+                    .set_session(None)
                     .set_result({"is_success": True})
                     .build()
             )
 
-        @command.command(method="sendFile", command_type=CommandType.CALL)
+        @command.command(method="sendFile_data", command_type=CommandType.CALL)
         async def send_file(self, ctx, header: dict, path: str, filename: str, data: bytes, **kwargs):
+            raw_data = kwargs.get("raw")
             dst: str = header.get("to")
 
-            sess = self.route(dst)
+            sess = Server.DataListener.route(dst)
+            sess.write(raw_data)
 
-            sess.write(
-                protocol.ProtocolBuilder()
-                    .set_method("sendFile")
-                    .set_session("session-01")
-                    .set_params({"header": header,
-                                 "path": path,
-                                 "filename": filename,
-                                 "data": data})
-                    .build()
-            )
-
-        @command.command(method="sendFile", command_type=CommandType.RESULT)
+        @command.command(method="sendFile_data", command_type=CommandType.RESULT)
         async def send_file_result(self, ctx, header: dict, is_success: bool, **kwargs):
-            self.logger.debug("sendFile")
-
             raw_data = kwargs.get("raw")
-
             src: str = header.get("from")
 
-            sess = Server.CommandListener.route(src)
+            sess = Server.DataListener.route(src)
             sess.write(raw_data)
