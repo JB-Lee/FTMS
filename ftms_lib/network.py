@@ -102,7 +102,7 @@ class SessionProtocol(BaseProtocol):
         data = bson.loads(data)
         method = data.get("method")
         session = data.get("session")
-        params = data.get("params")
+        params = data.get("params", dict())
         result = data.get("result")
 
         logger.debug(f"method: {method} | session: {session} | params: {params} | result: {result}")
@@ -118,14 +118,14 @@ class SessionProtocol(BaseProtocol):
         else:
             pass
 
-        if params:
+        if result:
             await asyncio.gather(
-                *[listener.invoke(self.transport, method, session=session, raw=raw_data, **params)
+                *[listener.invoke(self.transport, method, session=session, is_result=True, raw=raw_data, **result)
                   for listener in self.listeners])
 
         else:
             await asyncio.gather(
-                *[listener.invoke(self.transport, method, session=session, is_result=True, raw=raw_data, **result)
+                *[listener.invoke(self.transport, method, session=session, raw=raw_data, **params)
                   for listener in self.listeners])
 
         # self.transport.close()
@@ -136,16 +136,16 @@ class ContinuousProtocol(BaseProtocol):
         raw_data = data
         data = bson.loads(data)
         method = data.get("method")
-        params = data.get("params")
+        params = data.get("params", dict())
         result = data.get("result")
 
         logger.debug(f"method: {method} | params: {params} | result: {result}")
 
-        if params:
-            await asyncio.gather(
-                *[listener.invoke(self.transport, method, raw=raw_data, **params) for listener in self.listeners])
-
-        elif result:
+        if result:
             await asyncio.gather(
                 *[listener.invoke(self.transport, method, is_result=True, raw=raw_data, **result) for listener in
                   self.listeners])
+
+        else:
+            await asyncio.gather(
+                *[listener.invoke(self.transport, method, raw=raw_data, **params) for listener in self.listeners])

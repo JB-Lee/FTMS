@@ -1,11 +1,13 @@
+from typing import Optional
+
 import bson
 
 
 class ProtocolBuilder:
-    __method: str
-    __session: str
-    __params: dict
-    __result: dict
+    __method: Optional[str]
+    __session: Optional[str]
+    __params: Optional[dict]
+    __result: Optional[dict]
 
     def __init__(self):
         self.__method = None

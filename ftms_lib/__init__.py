@@ -1,3 +1,4 @@
+# noinspection SpellCheckingInspection
 __title__ = "ftms_lib"
 
 import logging
