@@ -41,10 +41,27 @@ class FileConfiguration(Configuration):
         return item in self._map
 
     def get(self, key: str, default: Any = None):
-        return self._map.get(key, default)
+        paths = key.split(".")
+        res = self._map
+
+        for x in paths:
+            if x not in res:
+                return default
+            else:
+                res = res[x]
+
+        return res
 
     def set(self, key: str, value: Any):
-        self._map[key] = value
+        paths = key.split(".")
+        res = self._map
+
+        for x in range(len(paths) - 1):
+            if paths[x] not in res:
+                res[paths[x]] = dict()
+            res = res[paths[x]]
+
+        res[paths[-1]] = value
 
     def set_default(self, default: dict):
         for k, v in default.items():
