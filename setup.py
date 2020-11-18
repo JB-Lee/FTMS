@@ -14,7 +14,7 @@ setup(name='ftms_lib',
       version='0.1',
       description='ftms_library',
       license='MIT',
-      packages=["ftms_lib"],
+      packages=["ftms_lib", "ftms_lib.command", "ftms_lib.utils"],
       classifiers=[
           'Programming Language :: Python :: 3.8',
       ],

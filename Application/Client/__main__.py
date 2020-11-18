@@ -16,12 +16,12 @@ DEFAULT_CONFIG = {
     },
 
     "data_server": {
-        "host": "localhost",
+        "host": "0.0.0.0",
         "port": 8082
     },
 
     "command_server": {
-        "host": "localhost",
+        "host": "0.0.0.0",
         "port": 8089
     }
 
@@ -54,15 +54,15 @@ async def main():
     # cmd_t, cmd_proto
     cmd_t, cmd_proto = await loop.create_connection(
         lambda: ftms_lib.ContinuousProtocol(),
-        "localhost",
-        8089
+        COMMAND_SERVER_HOST,
+        COMMAND_SERVER_PORT
     )
 
     # data_t, data_proto
     data_t, data_proto = await loop.create_connection(
         lambda: ftms_lib.ContinuousProtocol(),
-        "localhost",
-        8082
+        DATA_SERVER_HOST,
+        DATA_SERVER_PORT
     )
 
     if isinstance(cmd_proto, ftms_lib.ContinuousProtocol):

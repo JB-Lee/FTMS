@@ -61,7 +61,7 @@ class ClientCommandListener(ServerListener):
             sess.write(raw_data)
 
     @command.command(method="listdir", command_type=CommandType.RESULT)
-    async def listdir_result(self, ctx, header: dict, dirs: list, **kwargs):
+    async def list_dir_result(self, ctx, header: dict, dirs: list, **kwargs):
         raw_data = kwargs.get("raw")
         app_id = header.get("requester")
 
@@ -87,7 +87,7 @@ class AppCommandListener(ServerListener):
         sess.write(raw_data)
 
     @command.command(method="listdir", command_type=CommandType.CALL)
-    async def listdir(self, ctx, session, header: dict, path: str, **kwargs):
+    async def list_dir(self, ctx, session, header: dict, path: str, **kwargs):
         self.register_session(ctx, session)
 
         raw_data = kwargs.get("raw")
@@ -97,7 +97,7 @@ class AppCommandListener(ServerListener):
         sess.write(raw_data)
 
     @command.command(method="getUuid", command_type=CommandType.CALL)
-    async def listdir(self, ctx, session, **kwargs):
+    async def get_uuid(self, ctx, session, **kwargs):
         self.register_session(ctx, session)
 
         with SessionContext(ctx) as sess:

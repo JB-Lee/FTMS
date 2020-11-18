@@ -1,14 +1,17 @@
 import asyncio
 import logging
+import types
 from abc import ABCMeta, abstractmethod
 from typing import List, Optional
 
 import bson
 
-from . import command
+from .command import Listener
 from .session import SessionHandler, SessionStatus
 
 logger = logging.getLogger(__name__)
+
+EOF = b"\r\n\t\n\r"
 
 
 class SessionContext:
@@ -24,10 +27,23 @@ class SessionContext:
         self.__transport.close()
 
 
+class TransportWrapper(asyncio.transports.Transport):
+    @classmethod
+    def casting(cls, transport: asyncio.transports.Transport):
+        transport.__original_write = transport.write
+        transport.write = types.MethodType(cls.write, transport)
+        return transport
+
+    def write(self, data: bytes) -> None:
+        data += EOF
+        self.__original_write(data)
+
+
 class BaseProtocol(asyncio.Protocol, metaclass=ABCMeta):
     transport: asyncio.transports.Transport
-    listeners: List[command.Listener]
+    listeners: List[Listener]
     peer_name = None
+    buff: bytes = b''
 
     def __init__(self):
         loop = asyncio.get_running_loop()
@@ -35,7 +51,7 @@ class BaseProtocol(asyncio.Protocol, metaclass=ABCMeta):
         self.is_conn_lost = loop.create_future()
         self.is_listener_register = loop.create_future()
 
-    def register_listener(self, listener: command.Listener):
+    def register_listener(self, listener: Listener):
         logger.debug(f"Register Listener: {listener.__class__.__name__} to {self.__class__.__name__}")
         self.is_listener_register.set_result(True)
         self.listeners.append(listener)
@@ -47,17 +63,21 @@ class BaseProtocol(asyncio.Protocol, metaclass=ABCMeta):
         return await self.is_conn_lost
 
     def data_received(self, data: bytes) -> None:
-        asyncio.create_task(self.async_data_received(data))
+        self.buff += data
+        if data.endswith(EOF):
+            data = self.buff[:-len(EOF)]
+            self.buff = b""
+            asyncio.create_task(self.async_data_received(data))
 
     def eof_received(self) -> Optional[bool]:
         return super().eof_received()
 
     def connection_made(self, transport: asyncio.transports.Transport) -> None:
-        self.transport = transport
+        self.transport = TransportWrapper.casting(transport)
         self.peer_name = transport.get_extra_info("peername")
 
         for listener in self.listeners:
-            listener.on_create(transport)
+            listener.on_create(self.transport)
 
         logger.info(f"connection made: {self.peer_name}")
 

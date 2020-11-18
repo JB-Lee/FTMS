@@ -68,9 +68,9 @@ class DataListener(ClientListener):
             success = False
 
         finally:
-            ctx.write(
+            self.command_ctx.write(
                 protocol.ProtocolBuilder()
-                    .set_method("sendFile_data")
+                    .set_method("sendFile")
                     .set_session(None)
                     .set_result({"header": header,
                                  "is_success": success})

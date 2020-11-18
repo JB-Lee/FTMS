@@ -1,10 +1,13 @@
 import socket
 import unittest
+from pprint import pprint
 
 import bson
 
 from ftms_lib import protocol
 from ftms_lib import utils
+
+EOF = b"\r\n\t\n\r"
 
 CONFIG_FILE = "app_cfg.json"
 DEFAULT_CONFIG = {
@@ -13,7 +16,7 @@ DEFAULT_CONFIG = {
         "password": "abc1234"
     },
     "SERVER": {
-        "host": "localhost",
+        "host": "167.179.91.13",
         "port": 8088
     }
 }
@@ -52,14 +55,18 @@ class MyTestCase(unittest.TestCase):
         with Connection(HOST, PORT) as conn:
             conn.send(
                 protocol.ProtocolBuilder()
-                    .set_method("getUuid")
-                    .build()
+                .set_method("getUuid")
+                .build()
+                + EOF
             )
 
             data = conn.recv(1024)
+            data = data[:-len(EOF)]
             data = bson.loads(data)
 
-            print(data)
+            print()
+            print("Get UUID Test")
+            pprint(data)
 
             self.assertIn("method", data)
             self.assertIn("result", data)
@@ -67,21 +74,47 @@ class MyTestCase(unittest.TestCase):
 
             globals()["ID"] = data.get("result").get("uuid")
 
+    def test_listdir(self):
+        with Connection(HOST, PORT) as conn:
+            conn.send(
+                protocol.ProtocolBuilder()
+                .set_method("listdir")
+                .set_session(ID)
+                .set_params({"header": {"from": "client-a", "to": "client-a", "requester": ID},
+                             "path": "C://Temp"})
+                .build()
+                + EOF
+            )
+
+            data = conn.recv(1024)
+            data = data[:-len(EOF)]
+            data = bson.loads(data)
+
+            print()
+            print("List Dir Test")
+            pprint(data)
+
+            self.assertIn("method", data)
+
     def test_send_file(self):
         with Connection(HOST, PORT) as conn:
             conn.send(
                 protocol.ProtocolBuilder()
-                    .set_method("sendFile")
-                    .set_session(ID)
-                    .set_params({"header": {"from": "client-a", "to": "client-a", "requester": ID},
-                                 "src": {"path": "C:\\Temp", "file_name": "ubuntu.png"},
-                                 "dst": {"path": "C:\\Temp\\test", "file_name": "ubto.png"}})
-                    .build()
+                .set_method("sendFile")
+                .set_session(ID)
+                .set_params({"header": {"from": "client-a", "to": "client-a", "requester": ID},
+                             "src": {"path": "C:\\Temp", "file_name": "table.png"},
+                             "dst": {"path": "C:\\Temp\\test", "file_name": "ubto.png"}})
+                .build()
+                + EOF
             )
 
             data = conn.recv(1024)
+            data = data[:-len(EOF)]
             data = bson.loads(data)
 
-            print(data)
+            print()
+            print("Send File Test")
+            pprint(data)
 
             self.assertIn("method", data)

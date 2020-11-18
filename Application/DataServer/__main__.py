@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.DEBUG)
 CONFIG_FILE = "data_server_cfg.json"
 DEFAULT_CONFIG = {
     "data_server": {
-        "host": "localhost",
+        "host": "0.0.0.0",
         "port": 8082
     }
 }

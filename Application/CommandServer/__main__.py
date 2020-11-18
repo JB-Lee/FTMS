@@ -8,15 +8,16 @@ from ftms_lib import utils
 
 logging.basicConfig(level=logging.DEBUG)
 
+
 CONFIG_FILE = "command_server_cfg.json"
 DEFAULT_CONFIG = {
     "app_server": {
-        "host": "localhost",
+        "host": "0.0.0.0",
         "port": 8088
     },
 
     "client_server": {
-        "host": "localhost",
+        "host": "0.0.0.0",
         "port": 8089
     }
 }
