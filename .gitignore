@@ -1,5 +1,16 @@
 
-
+# Client file
 /Application/App_client
 /Application/Client
 
+
+# Bulid file
+/build
+/dist
+/ftms_lib.egg-info
+
+
+# Server/Clinet
+# cfg.json
+
+*.json
