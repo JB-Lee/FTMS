@@ -127,15 +127,18 @@ class SessionProtocol(BaseProtocol):
 
         logger.debug(f"method: {method} | session: {session} | params: {params} | result: {result}")
 
-        session_status = self.session_handler.get_session_state(session)
+        session_status = self.session_handler.get_session_state(session) # status
 
         if (session_status == SessionStatus.INVALID) and (method not in self.method_whitelist):
+            self.session_handler.on_session_invalid(session)
             pass
 
         elif session_status == SessionStatus.EXPIRED:
+            self.session_handler.on_session_expired(session)
             pass
 
-        else:
+        else: # session OK
+            self.session_handler.on_session_ok(session)
             pass
 
         if result:
