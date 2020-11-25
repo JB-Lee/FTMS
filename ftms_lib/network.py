@@ -7,7 +7,7 @@ from typing import List, Optional
 import bson
 
 from .command import Listener
-from .session import SessionHandler, SessionStatus
+from .session import SessionHandler, SessionStatus, SessionManager
 
 logger = logging.getLogger(__name__)
 
@@ -106,15 +106,18 @@ class BaseProtocol(asyncio.Protocol, metaclass=ABCMeta):
 
 class SessionProtocol(BaseProtocol):
     session_handler: SessionHandler
+    session_manager: SessionManager
+
     method_whitelist: List[str]
 
-    def __init__(self, session_handler: SessionHandler, method_whitelist: List[str] = None):
+    def __init__(self, session_handler: SessionHandler, session_manager: SessionManager, method_whitelist: List[str] = None):
         super(SessionProtocol, self).__init__()
 
         if method_whitelist is None:
             method_whitelist = list()
 
         self.session_handler = session_handler
+        self.session_manager = session_manager
         self.method_whitelist = method_whitelist
 
     async def command_processing(self, data: bytes) -> None:

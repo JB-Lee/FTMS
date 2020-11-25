@@ -40,3 +40,14 @@ class NullSessionHandler(SessionHandler):
 
     def on_session_invalid(self, session:str) -> None:
         return super().on_session_invalid()
+
+
+class SessionManager(metaclass=ABCMeta):
+    
+    @abstractmethod
+    def create_session(self, params: dict) -> bool:
+        pass
+    
+    @abstractmethod
+    def delete_session(self, session: str) -> bool:
+        pass
