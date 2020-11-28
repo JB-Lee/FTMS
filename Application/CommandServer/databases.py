@@ -42,6 +42,16 @@ class DatabaseController(DatabaseHandler):
         
         except expression as identifier:
             return DatabaseStatus.ERROR
+    @classmethod
+    def get_update_database(cls, cursor ,query: str) -> DatabaseStatus:
+        _cursor = cursor
+        
+        try:
+            _cursor.execute(query)
+            return DatabaseStatus.OK
+        
+        except expression as identifier:
+            return DatabaseStatus.ERROR
 
 
 """ 

@@ -54,7 +54,7 @@ class ClientCommandListener(ServerListener):
 
     @command.command(method="sendFile", command_type=CommandType.RESULT)
     async def send_file_result(self, ctx, header: dict, is_success: bool, **kwargs):
-        raw_data = kwargs.get("raw")
+        ra_data = kwargs.get("raw")
         app_id = header.get("requester")
 
         with SessionContext(AppCommandListener.route(app_id)) as sess:
