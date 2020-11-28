@@ -45,9 +45,13 @@ class SessionManager(metaclass=ABCMeta):
         pass
     
     @abstractmethod
-    def create_session(self, params: dict) -> bool:
+    def create_session(self, session: str) -> bool:
         pass
     
     @abstractmethod
     def delete_session(self, session: str) -> bool:
+        pass
+
+    @abstractmethod
+    def update_session(self, session: str) -> bool:
         pass
