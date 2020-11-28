@@ -9,10 +9,6 @@ class SessionStatus(Enum):
 
 
 class SessionHandler(metaclass=ABCMeta):
-
-    @abstractmethod
-    def get_session_state(self, session: str) -> SessionStatus:
-        pass
     
     @abstractmethod
     def on_session_ok(self, session:str) -> None:
@@ -29,8 +25,8 @@ class SessionHandler(metaclass=ABCMeta):
 
 class NullSessionHandler(SessionHandler):
 
-    def get_session_state(self, session: str) -> SessionStatus:
-        return SessionStatus.OK
+    """def get_session_state(self, session: str) -> SessionStatus:
+        return SessionStatus.OK"""
 
     def on_session_ok(self, session:str) -> None:
         return super().on_session_ok()
@@ -43,6 +39,10 @@ class NullSessionHandler(SessionHandler):
 
 
 class SessionManager(metaclass=ABCMeta):
+
+    @abstractmethod
+    def get_session_state(self, session: str) -> SessionStatus:
+        pass
     
     @abstractmethod
     def create_session(self, params: dict) -> bool:
