@@ -1,9 +1,8 @@
 import asyncio
 import logging
-
 import listeners
-
 import ftms_lib
+from . import sessions
 from ftms_lib import utils
 
 logging.basicConfig(level=logging.DEBUG)
@@ -41,7 +40,10 @@ def client_command_protocol_factory():
 
 
 def app_command_protocol_factory():
-    protocol = ftms_lib.SessionProtocol(ftms_lib.NullSessionHandler())
+    session_manager = sessions.DBSessionManager()
+    session_handler = sessions.SessionStateHandler()
+
+    protocol = ftms_lib.SessionProtocol(session_handler, session_manager)
     protocol.register_listener(listeners.AppCommandListener())
     return protocol
 
