@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">FTMS</string>
+    <string name="db_name">app_db.db</string>
 </resources>

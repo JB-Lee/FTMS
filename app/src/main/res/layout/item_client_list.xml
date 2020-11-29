@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="client"
+            type="org.cnsl.ftms.repository.local.entities.Client" />
+
+        <variable
+            name="vm"
+            type="org.cnsl.ftms.viewmodel.ManageViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@color/colorPrimaryLight"
+        android:elevation="2dp"
+        android:gravity="center_vertical"
+        android:padding="10dp">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/img_client_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:src="@drawable/ic_baseline_desktop_access_disabled_24"
+            android:tint="@color/textDark" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_client"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:text="@{client.name}"
+                android:textColor="@color/textDark"
+                android:textSize="17sp" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_client_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:text="@{client.id}"
+                android:textColor="@color/textGray"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_item_edit"
+                style="@style/IconOnlyButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:elevation="8dp"
+                android:onClick="@{(v) -> vm.onEditClientClick(v, client)}"
+                app:backgroundTint="@color/colorPrimaryLight"
+                app:icon="@drawable/ic_baseline_menu_24"
+                app:iconTint="@color/textDark" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</layout>

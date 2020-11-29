@@ -9,18 +9,20 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fileitem_view.view.*
 import org.cnsl.ftms.R
+import org.cnsl.ftms.repository.remote.entities.FileItem
+import org.cnsl.ftms.utils.ItemActionListener
 
-class FileItemAdapter(
+class FileItemAdapters(
     private val context: Context,
     private val fileItems: ArrayList<FileItem>,
     private val listener: FileItemClickListener
-) : RecyclerView.Adapter<FileItemAdapter.ViewHolder>(), ItemActionListener {
+) : RecyclerView.Adapter<FileItemAdapters.ViewHolder>(), ItemActionListener {
 
-    private lateinit var target: FileItemAdapter
+    private lateinit var target: FileItemAdapters
 
     class ViewHolder(val fileView: View) : RecyclerView.ViewHolder(fileView)
 
-    fun setTarget(target: FileItemAdapter) {
+    fun setTarget(target: FileItemAdapters) {
         this.target = target
     }
 

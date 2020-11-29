@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="org.cnsl.ftms.view.EditClientActivity">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="org.cnsl.ftms.viewmodel.EditClientViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorPrimary">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="20dp"
+            android:background="@color/colorPrimaryLight"
+            android:elevation="10dp"
+            android:orientation="vertical">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="0dp"
+                android:layout_marginTop="0dp"
+                android:background="@color/colorSecondaryDark"
+                android:padding="12dp"
+                android:text="Edit Client"
+                android:textColor="@color/textLight"
+                android:textSize="18sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="15dp">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="15dp"
+                    android:textColorHint="@color/textGray"
+                    app:boxBackgroundColor="@color/colorPrimaryLight"
+                    app:endIconMode="clear_text"
+                    app:hintTextColor="@color/colorSecondary">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_client_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Name"
+                        android:nextFocusForward="@id/et_client_id"
+                        android:text="@={vm.client.name}"
+                        android:textColor="@color/textDark" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="15dp"
+                    android:textColorHint="@color/textGray"
+                    app:boxBackgroundColor="@color/colorPrimaryLight"
+                    app:endIconMode="clear_text"
+                    app:hintTextColor="@color/colorSecondary">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_client_id"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Client ID"
+                        android:nextFocusForward="@id/et_client_pw"
+                        android:text="@={vm.client.id}"
+                        android:textColor="@color/textDark" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="15dp"
+                    android:textColorHint="@color/textGray"
+                    app:boxBackgroundColor="@color/colorPrimaryLight"
+                    app:endIconMode="clear_text"
+                    app:hintTextColor="@color/colorSecondary">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_client_pw"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Client Password"
+                        android:nextFocusForward="@id/btn_register"
+                        android:text="@={vm.client.pw}"
+                        android:textColor="@color/textDark" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_register"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@color/colorSecondaryDark"
+                    android:elevation="10dp"
+                    android:onClick="@{(v)->vm.onRegisterClick(v)}"
+                    android:text="Submit"
+                    android:textColor="@color/textLight"
+                    app:backgroundTint="@color/colorSecondaryDark" />
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</layout>

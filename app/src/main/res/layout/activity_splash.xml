@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.motion.widget.MotionLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/motion_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background"
+    app:layoutDescription="@xml/activity_splash_scene"
+    tools:context="org.cnsl.ftms.SplashActivity">
+
+    <ImageView
+        android:id="@+id/img_splash_give"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="200dp"
+        android:src="@drawable/give"
+        app:layout_constraintBottom_toBottomOf="@id/img_splash_and"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/img_splash_and"
+        android:layout_width="128dp"
+        android:layout_height="128dp"
+        android:src="@drawable/and"
+        app:layout_constraintBottom_toBottomOf="@+id/img_splash_take"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/img_splash_give" />
+
+    <ImageView
+        android:id="@+id/img_splash_take"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="200dp"
+        android:src="@drawable/take"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/img_splash_and" />
+
+
+</androidx.constraintlayout.motion.widget.MotionLayout>

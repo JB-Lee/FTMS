@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="org.cnsl.ftms.view.ManageActivity">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="org.cnsl.ftms.viewmodel.ManageViewModel" />
+    </data>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorPrimary"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorPrimaryLight"
+                android:elevation="8dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:padding="12dp"
+                    android:text="선택된 클라이언트"
+                    android:textColor="@color/textDark"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_selected_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:client_items="@{vm.selectClients}" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorPrimaryLight"
+                android:elevation="8dp"
+                android:padding="12dp"
+                android:text="클라이언트 목록"
+                android:textColor="@color/textDark"
+                android:textSize="16sp" />
+
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/srl_client_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_client_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:client_items="@{vm.clients}" />
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        </LinearLayout>
+
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_manage_main"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="20dp"
+            android:onClick="@{(v) -> vm.onMainFabClick(v)}"
+            android:src="@drawable/ic_baseline_add_24"
+            app:backgroundTint="@color/colorSecondaryDark"
+            app:tint="@color/textLight" />
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/fab_manage_add_client"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="90dp"
+            android:onClick="@{(v)->vm.onAddClientFabClick(v)}"
+            android:text="클라이언트 추가"
+            android:textColor="@color/textLight"
+            android:visibility="invisible"
+            app:backgroundTint="@color/colorSecondaryDark"
+            app:icon="@drawable/ic_baseline_add_24"
+            app:iconTint="@color/textLight" />
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/fab_manage_transfer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="160dp"
+            android:clickable="false"
+            android:onClick="@{(v)->vm.onTransferFabClick(v)}"
+            android:text="연결 수립"
+            android:textColor="@color/textLight"
+            android:visibility="invisible"
+            app:backgroundTint="@color/colorPrimaryDark"
+            app:icon="@drawable/ic_baseline_sync_alt_24"
+            app:iconTint="@color/textLight" />
+
+    </FrameLayout>
+
+
+</layout>

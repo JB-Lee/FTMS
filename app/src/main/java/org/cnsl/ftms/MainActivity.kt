@@ -7,13 +7,19 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
-import org.cnsl.ftms.fileview.*
-import org.cnsl.ftms.network.RequestHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import org.cnsl.ftms.fileview.FileItemAdapters
+import org.cnsl.ftms.fileview.FileItemClickListener
+import org.cnsl.ftms.net.RequestHelper
+import org.cnsl.ftms.repository.remote.entities.FileItem
+import org.cnsl.ftms.utils.ItemActionListener
+import org.cnsl.ftms.utils.ItemTouchHelperCallback
 
 class MainActivity : AppCompatActivity(), FileItemClickListener {
 
-    private lateinit var viewAdapter_1: FileItemAdapter
-    private lateinit var viewAdapter_2: FileItemAdapter
+    private lateinit var viewAdapter_1: FileItemAdapters
+    private lateinit var viewAdapter_2: FileItemAdapters
     private lateinit var viewManager_1: RecyclerView.LayoutManager
     private lateinit var viewManager_2: RecyclerView.LayoutManager
 
@@ -27,18 +33,18 @@ class MainActivity : AppCompatActivity(), FileItemClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        items_1.add(FileItem(false, "AAA", 100, 10000))
-        items_1.add(FileItem(true, "abc.zip", 100, 10000))
-        items_1.add(FileItem(true, "abd.zip", 100, 10000))
-
-        items_2.add(FileItem(false, "BBB", 100, 10000))
-        items_2.add(FileItem(true, "abe.zip", 100, 10000))
-        items_2.add(FileItem(true, "abc.zip", 100, 10000))
+//        items_1.add(FileItem(false, "AAA", 100, 10000))
+//        items_1.add(FileItem(true, "abc.zip", 100, 10000))
+//        items_1.add(FileItem(true, "abd.zip", 100, 10000))
+//
+//        items_2.add(FileItem(false, "BBB", 100, 10000))
+//        items_2.add(FileItem(true, "abe.zip", 100, 10000))
+//        items_2.add(FileItem(true, "abc.zip", 100, 10000))
 
         viewManager_1 = LinearLayoutManager(this)
         viewManager_2 = LinearLayoutManager(this)
-        viewAdapter_1 = FileItemAdapter(this, items_1, this)
-        viewAdapter_2 = FileItemAdapter(this, items_2, this)
+        viewAdapter_1 = FileItemAdapters(this, items_1, this)
+        viewAdapter_2 = FileItemAdapters(this, items_2, this)
 
         viewAdapter_1.setTarget(viewAdapter_2)
         viewAdapter_2.setTarget(viewAdapter_1)
@@ -66,28 +72,64 @@ class MainActivity : AppCompatActivity(), FileItemClickListener {
             adapter = viewAdapter_2
         }
 
+        CoroutineScope(Dispatchers.IO).apply {
+
+        }
+
+
+
         btn_main.setOnClickListener {
             Thread {
-                RequestHelper("10.0.2.2", 8082)
+                var id = ""
+                RequestHelper("host", 8088)
                     .request(
-                        method = 1,
+                        method = "getUuid",
                         session = null,
-                        params = mapOf(
-                            "user" to "Lee",
-                            "pass" to "85236"
-                        ),
+                        params = null,
                         onSuccess = {
-                            runOnUiThread { Toast.makeText(this, it["result"].toString(), Toast.LENGTH_SHORT).show() }
+                            runOnUiThread { Toast.makeText(this, it.toString(), Toast.LENGTH_SHORT).show() }
+                            val result = it.get("result") as Map<*, *>
+                            id = result["uuid"] as String
                         },
                         onFail = null
                     )
+                    .request(
+                        method = "listdir",
+                        session = id,
+                        params = mapOf(
+                            "header" to mapOf(
+                                "from" to "client-a",
+                                "to" to "client-a",
+                                "requester" to id
+                            ),
+                            "path" to "C://Temp"
+                        ),
+                        onSuccess = {
+                            runOnUiThread {
+                                Toast.makeText(this, it.toString(), Toast.LENGTH_SHORT).show()
+
+                                val result = it.get("result") as Map<*, *>
+                                val filelist = result["dirs"] as List<*>
+
+                                val items = ArrayList<FileItem>()
+//                                for (filename in filelist)
+//                                    items.add(
+//                                        FileItem(true, filename as String, 100, 100)
+//                                    )
+                                viewAdapter_1.changeItems(items)
+
+                            }
+                        },
+                        onFail = null
+                    )
+
             }.start()
 
-            val items = ArrayList<FileItem>()
-            items.add(
-                FileItem(false, "abc", 100, 100)
-            )
-            viewAdapter_1.changeItems(items)
+//            val items = ArrayList<FileItem>()
+//            items.add(
+//                FileItem(false, "abc", 100, 100)
+//            )
+//            viewAdapter_1.changeItems(items)
         }
 
 

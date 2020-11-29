@@ -1,4 +1,4 @@
-package org.cnsl.ftms.fileview
+package org.cnsl.ftms.utils
 
 import androidx.recyclerview.widget.RecyclerView
 
