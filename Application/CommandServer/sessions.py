@@ -1,6 +1,7 @@
 from ftms_lib import SessionStatus, SessionHandler, NullSessionHandler, SessionManager, SessionContext
 from ftms_lib import protocol
-from .databases import DatabaseContext, DatabaseController, DatabaseStatus
+#from .databases import DatabaseContext, DatabaseController, DatabaseStatus
+from databases import DatabaseContext, DatabaseController, DatabaseStatus
 import time, uuid
     
 
@@ -65,7 +66,7 @@ class SessionStateHandler(SessionHandler, DBSessionManager):
 
     def on_session_ok(self, session: str):        
         # session 존재 하니 동작 할 것
-        self.update_session(session)
+        self.update_session(session) # 갱신시간 업데이트
         pass
 
     def on_session_expired(self, session: str):

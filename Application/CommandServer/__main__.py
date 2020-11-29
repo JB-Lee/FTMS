@@ -2,7 +2,8 @@ import asyncio
 import logging
 import listeners
 import ftms_lib
-from . import sessions
+#from . import sessions
+import sessions
 from ftms_lib import utils
 
 logging.basicConfig(level=logging.DEBUG)

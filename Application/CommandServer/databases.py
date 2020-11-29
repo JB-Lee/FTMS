@@ -77,7 +77,7 @@ class DatabaseContext(DatabaseContextHandler, DatabaseController):
 
         return cursor
 
-    def __exit__(self, exec_type: exeception_type, exec_val, exc_tb): 
-        # exception_type, exception_value, exception_traceback
+    def __exit__(self, exec_type, exec_val, exc_tb): 
+        # (exception_type, exception_value, exception_traceback)
         
         self.pool.release(connetion)
