@@ -42,81 +42,99 @@
                 motion:framePosition="20"
                 motion:motionTarget="@+id/img_splash_give" />
             <KeyAttribute
-                android:translationX="600dp"
-                motion:framePosition="20"
-                motion:motionTarget="@+id/img_splash_take" />
-            <KeyAttribute
                 android:translationY="-10dp"
                 motion:framePosition="20"
                 motion:motionTarget="@+id/img_splash_give" />
             <KeyAttribute
-                android:translationY="-300dp"
-                motion:framePosition="20"
-                motion:motionTarget="@+id/img_splash_take" />
-
-            <KeyAttribute
-                android:translationX="0dp"
-                motion:framePosition="25"
-                motion:motionTarget="@+id/img_splash_give" />
-            <KeyAttribute
-                android:translationY="0dp"
-                motion:framePosition="25"
-                motion:motionTarget="@+id/img_splash_give" />
-
-
-            <KeyAttribute
-                android:translationX="-20dp"
-                motion:framePosition="40"
-                motion:motionTarget="@+id/img_splash_take" />
-            <KeyAttribute
-                android:translationY="10dp"
-                motion:framePosition="40"
-                motion:motionTarget="@+id/img_splash_take" />
-            <KeyAttribute
                 android:scaleX="2"
-                motion:framePosition="40"
+                motion:framePosition="20"
                 motion:motionTarget="@+id/img_splash_and" />
-
-
-            <KeyAttribute
-                android:translationX="0dp"
-                motion:framePosition="45"
-                motion:motionTarget="@+id/img_splash_take" />
-            <KeyAttribute
-                android:translationY="0dp"
-                motion:framePosition="45"
-                motion:motionTarget="@+id/img_splash_take" />
             <KeyAttribute
                 android:scaleY="2"
-                motion:framePosition="45"
+                motion:framePosition="20"
+                motion:motionTarget="@+id/img_splash_and" />
+            <!--            <KeyAttribute-->
+            <!--                android:translationX="600dp"-->
+            <!--                motion:framePosition="20"-->
+            <!--                motion:motionTarget="@+id/img_splash_take" />-->
+            <!--            <KeyAttribute-->
+            <!--                android:translationY="-300dp"-->
+            <!--                motion:framePosition="20"-->
+            <!--                motion:motionTarget="@+id/img_splash_take" />-->
+
+            <KeyAttribute
+                android:translationX="0dp"
+                motion:framePosition="25"
+                motion:motionTarget="@+id/img_splash_give" />
+            <KeyAttribute
+                android:translationY="0dp"
+                motion:framePosition="25"
+                motion:motionTarget="@+id/img_splash_give" />
+
+            <KeyAttribute
+                android:scaleX="2"
+                motion:framePosition="25"
+                motion:motionTarget="@+id/img_splash_and" />
+            <KeyAttribute
+                android:scaleY="2"
+                motion:framePosition="25"
                 motion:motionTarget="@+id/img_splash_and" />
             <KeyAttribute
                 android:alpha="0"
-                motion:framePosition="45"
+                motion:framePosition="25"
                 motion:motionTarget="@+id/img_splash_and" />
 
             <KeyAttribute
                 android:alpha="1"
-                motion:framePosition="50"
+                motion:framePosition="30"
                 motion:motionTarget="@+id/img_splash_and" />
 
             <KeyAttribute
                 android:scaleX="0.9"
-                motion:framePosition="65"
+                motion:framePosition="45"
                 motion:motionTarget="@+id/img_splash_and" />
             <KeyAttribute
                 android:scaleY="0.9"
-                motion:framePosition="65"
+                motion:framePosition="45"
                 motion:motionTarget="@+id/img_splash_and" />
 
             <KeyAttribute
                 android:scaleX="1"
-                motion:framePosition="70"
+                motion:framePosition="50"
                 motion:motionTarget="@+id/img_splash_and" />
             <KeyAttribute
                 android:scaleY="1"
-                motion:framePosition="70"
+                motion:framePosition="50"
                 motion:motionTarget="@+id/img_splash_and" />
+
+            <KeyAttribute
+                android:translationX="600dp"
+                motion:framePosition="40"
+                motion:motionTarget="@+id/img_splash_take" />
+            <KeyAttribute
+                android:translationY="-300dp"
+                motion:framePosition="40"
+                motion:motionTarget="@+id/img_splash_take" />
+
+            <KeyAttribute
+                android:translationX="-20dp"
+                motion:framePosition="60"
+                motion:motionTarget="@+id/img_splash_take" />
+            <KeyAttribute
+                android:translationY="10dp"
+                motion:framePosition="60"
+                motion:motionTarget="@+id/img_splash_take" />
+
+
+            <KeyAttribute
+                android:translationX="0dp"
+                motion:framePosition="65"
+                motion:motionTarget="@+id/img_splash_take" />
+            <KeyAttribute
+                android:translationY="0dp"
+                motion:framePosition="65"
+                motion:motionTarget="@+id/img_splash_take" />
+
         </KeyFrameSet>
         <OnClick />
     </Transition>

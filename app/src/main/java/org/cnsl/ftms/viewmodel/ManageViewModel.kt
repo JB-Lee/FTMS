@@ -4,31 +4,45 @@ import android.content.Context
 import android.content.Intent
 import android.view.View
 import androidx.lifecycle.*
+import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.cnsl.ftms.repository.local.database.ClientDatabase
 import org.cnsl.ftms.repository.local.entities.Client
+import org.cnsl.ftms.repository.remote.database.FileItemDatabase
 import org.cnsl.ftms.utils.LiveArrayList
 import org.cnsl.ftms.view.EditClientActivity
 import org.cnsl.ftms.view.ManageActivity
 import org.cnsl.ftms.view.RegisterClientActivity
 import org.cnsl.ftms.view.TransferActivity
 
-class ManageViewModel(val context: Context) : ViewModel(), LifecycleObserver {
+class ManageViewModel(val context: Context, val clientView: RecyclerView) : ViewModel(), LifecycleObserver {
     val clients = LiveArrayList<Client>()
     val selectClients = LiveArrayList<Client>()
 
     var onEdit: Client? = null
 
-    fun onClientRefresh(srl: SwipeRefreshLayout) {
-        viewModelScope.launch {
-            clients.forEach {
-                it.isAvailable = true
+    fun checkConnection() {
+        viewModelScope.launch(Dispatchers.IO) {
+            FileItemDatabase.getInstance(context).getFileItemDao().apply {
+                clients.forEach {
+                    val available = ping(it.id)
+                    withContext(Dispatchers.Main) {
+                        it.isAvailable.value = available
+                    }
+                }
             }
-            srl.isRefreshing = false
+            withContext(Dispatchers.Main) {
+                clientView.adapter?.notifyDataSetChanged()
+            }
         }
+    }
+
+    fun onClientRefresh(srl: SwipeRefreshLayout) {
+        checkConnection()
+        srl.isRefreshing = false
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
@@ -39,8 +53,8 @@ class ManageViewModel(val context: Context) : ViewModel(), LifecycleObserver {
                 clients.clear(false)
                 clients.addAll(list)
             }
+            checkConnection()
         }
-
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)

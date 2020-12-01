@@ -3,14 +3,8 @@ package org.cnsl.ftms.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import org.cnsl.ftms.MainApplication
-import org.cnsl.ftms.R
 import org.cnsl.ftms.databinding.ItemClientListBinding
 import org.cnsl.ftms.repository.local.entities.Client
 import org.cnsl.ftms.viewmodel.ManageViewModel
@@ -58,17 +52,5 @@ class ClientViewHolder(
         itemClientListBinding.executePendingBindings()
         itemClientListBinding.btnItemEdit.visibility = if (buttonAvailable) View.VISIBLE else View.INVISIBLE
         itemClientListBinding.btnItemEdit.isClickable = buttonAvailable
-
-        GlobalScope.launch(Dispatchers.Main) {
-            if (client.isAvailable) {
-                itemClientListBinding.imgClientIcon.setImageDrawable(
-                    ResourcesCompat.getDrawable(
-                        MainApplication.getInstance().resources,
-                        R.drawable.ic_baseline_desktop_windows_24,
-                        null
-                    )
-                )
-            }
-        }
     }
 }

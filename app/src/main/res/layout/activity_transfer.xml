@@ -25,14 +25,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="#fff"
-                android:elevation="5dp"
-                android:padding="5dp">
+                android:elevation="5dp">
 
-                <TextView
-                    android:layout_width="match_parent"
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@{vm.client_a.name + '@' + vm.APath}" />
-
+                    android:layout_weight="1"
+                    android:padding="8dp"
+                    android:text="@{vm.client_a.name + '@' + vm.APath}"
+                    android:textColor="@color/textDark"
+                    android:textSize="14sp" />
             </LinearLayout>
 
 
@@ -54,13 +56,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="#fff"
-                android:elevation="5dp"
-                android:padding="5dp">
+                android:elevation="5dp">
 
-                <TextView
-                    android:layout_width="match_parent"
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@{vm.client_b.name + '@' + vm.BPath}" />
+                    android:layout_weight="1"
+                    android:padding="8dp"
+                    android:text="@{vm.client_b.name + '@' + vm.BPath}"
+                    android:textColor="@color/textDark"
+                    android:textSize="14sp" />
             </LinearLayout>
 
 
@@ -69,7 +74,6 @@
                 files="@{vm.bFiles}"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
-
 
         </LinearLayout>
 

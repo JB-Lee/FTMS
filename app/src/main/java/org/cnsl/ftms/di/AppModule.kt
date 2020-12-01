@@ -1,5 +1,6 @@
 package org.cnsl.ftms.di
 
+import androidx.recyclerview.widget.RecyclerView
 import org.cnsl.ftms.repository.local.entities.Client
 import org.cnsl.ftms.viewmodel.EditClientViewModel
 import org.cnsl.ftms.viewmodel.ManageViewModel
@@ -9,7 +10,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val manageModule = module {
-    viewModel { ManageViewModel(get()) }
+    viewModel { (view: RecyclerView) -> ManageViewModel(get(), view) }
 }
 
 val registerModule = module {

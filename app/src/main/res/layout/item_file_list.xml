@@ -10,6 +10,10 @@
         <variable
             name="vm"
             type="org.cnsl.ftms.viewmodel.TransferViewModel" />
+
+        <variable
+            name="index"
+            type="Integer" />
     </data>
 
     <LinearLayout
@@ -17,6 +21,7 @@
         android:layout_height="60dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
+        android:onClick="@{() -> vm.onItemClick(index,file)}"
         android:padding="10dp">
 
         <ImageView
@@ -24,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="10dp"
-            android:src="@drawable/ic_baseline_folder_24" />
+            android:src="@{file.file ? @drawable/ic_baseline_file_24 : @drawable/ic_baseline_folder_24}" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -49,10 +54,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
-                    android:text="@{vm.getFormattedSize(file.size)}"
+                    android:text="@{file.file ? vm.getFormattedSize(file.size) : ``}"
                     android:textColor="@color/textGray"
-                    android:textSize="12sp"
-                    android:visibility="invisible" />
+                    android:textSize="12sp" />
 
             </LinearLayout>
 

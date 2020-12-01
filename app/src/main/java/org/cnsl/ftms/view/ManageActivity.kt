@@ -19,12 +19,17 @@ import org.cnsl.ftms.repository.local.entities.Client
 import org.cnsl.ftms.utils.ItemActionListener
 import org.cnsl.ftms.utils.ItemTouchHelperCallback
 import org.cnsl.ftms.viewmodel.ManageViewModel
-import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 import java.util.*
 
 class ManageActivity : AppCompatActivity() {
 
-    val viewModel: ManageViewModel by inject()
+    val viewModel: ManageViewModel by viewModel {
+        parametersOf(
+            rv_client_list
+        )
+    }
     val binding: ActivityManageBinding by lazy { DataBindingUtil.setContentView(this, R.layout.activity_manage) }
     var isFabOpen = false
 

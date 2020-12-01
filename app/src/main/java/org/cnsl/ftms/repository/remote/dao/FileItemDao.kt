@@ -1,17 +1,24 @@
 package org.cnsl.ftms.repository.remote.dao
 
-import org.cnsl.ftms.net.AsyncClient
 import org.cnsl.ftms.repository.remote.entities.FileItem
 
-class FileItemDao(val host: String, val port: Int) {
-    private val EOF = "\r\n\t\n\r".toByteArray()
+interface FileItemDao {
 
-    suspend fun createConnection(): AsyncClient {
-        return AsyncClient.getInstance(host, port)
-    }
+    suspend fun getFileList(from: String, path: String, requester: String): List<FileItem>
 
-    suspend fun getFileList(vararg file: FileItem) {
+    suspend fun add(
+        from: String,
+        pathFrom: String,
+        to: String,
+        pathTo: String,
+        requester: String,
+        item: FileItem
+    ): Boolean
 
+    suspend fun getRootPath(from: String, requester: String): String
 
-    }
+    suspend fun getUUID(): String
+
+    suspend fun ping(from: String): Boolean
+
 }

@@ -6,14 +6,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.cnsl.ftms.net.RequestHelper
 import org.cnsl.ftms.repository.local.entities.Client
+import org.cnsl.ftms.repository.remote.database.FileItemDatabase
 import org.cnsl.ftms.repository.remote.entities.FileItem
 import org.cnsl.ftms.utils.LiveArrayList
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.floor
 import kotlin.math.ln
 import kotlin.math.pow
@@ -32,114 +31,65 @@ class TransferViewModel(val context: Context, val client_a: Client, val client_b
     fun onInit() {
         viewModelScope.launch(Dispatchers.IO) {
 
-            RequestHelper("host", 8088).apply {
-                var result = asyncRequest(
-                    method = "getUuid",
-                    session = null,
-                    params = null,
-                ).get("result") as Map<*, *>
-                session = result["uuid"] as String
+            FileItemDatabase.getInstance(context).getFileItemDao().apply {
+                session = getUUID()
 
-                val asAPath = async {
-                    val res = asyncRequest(
-                        method = "get_root",
-                        session = "abc",
-                        params = mapOf(
-                            "header" to mapOf(
-                                "from" to client_a.id,
-                                "requester" to "abc"
-                            )
-                        ),
-                    ).get("result") as Map<*, *>
-                    println(res["cwd"] as String)
-                    return@async res["cwd"] as String
-                }
+                val aPathFut = async { getRootPath(client_a.id, session) }
+                val bPathFut = async { getRootPath(client_b.id, session) }
 
-                val asBPath = async {
-                    val res = asyncRequest(
-                        method = "get_root",
-                        session = "ab2",
-                        params = mapOf(
-                            "header" to mapOf(
-                                "from" to client_b.id,
-                                "requester" to "ab2"
-                            )
-                        ),
-                    ).get("result") as Map<*, *>
-                    println(res["cwd"] as String)
-                    return@async res["cwd"] as String
-                }
+                val aPathTmp = aPathFut.await()
+                val bPathTmp = bPathFut.await()
+
+                val aFileFut = async { getFileList(client_a.id, aPathTmp, session) }
+                val bFileFut = async { getFileList(client_b.id, bPathTmp, session) }
 
                 withContext(Dispatchers.Main) {
-                    aPath.value = asAPath.await()
-                    bPath.value = asBPath.await()
+                    aPath.value = aPathTmp
+                    bPath.value = bPathTmp
+                    aFiles.value = aFileFut.await() as ArrayList<FileItem>
+                    bFiles.value = bFileFut.await() as ArrayList<FileItem>
                 }
 
-                val asAFile = async {
-                    val res = asyncRequest(
-                        method = "get_dir",
-                        session = "a",
-                        params = mapOf(
-                            "header" to mapOf(
-                                "from" to client_a.id,
-                                "requester" to "a"
-                            ),
-                            "path" to aPath.value
-                        ),
-                    ).get("result") as Map<*, *>
-
-                    val list = ArrayList<FileItem>()
-
-                    (res["dirs"] as List<*>).forEach {
-                        it as Map<*, *>
-                        list.add(
-                            FileItem(
-                                it["name"] as String, it["size"] as Int, it["is_file"] as Boolean,
-                                it["last_modified"] as Int
-                            )
-                        )
-                    }
-
-                    return@async list
-                }
-
-                val asBFile = async {
-                    val res = asyncRequest(
-                        method = "get_dir",
-                        session = "b",
-                        params = mapOf(
-                            "header" to mapOf(
-                                "from" to client_b.id,
-                                "requester" to "b"
-                            ),
-                            "path" to bPath.value
-                        ),
-                    ).get("result") as Map<*, *>
-
-                    val list = ArrayList<FileItem>()
-
-                    (res["dirs"] as List<*>).forEach {
-                        it as Map<*, *>
-                        list.add(
-                            FileItem(
-                                it["name"] as String, it["size"] as Int, it["is_file"] as Boolean,
-                                it["last_modified"] as Int
-                            )
-                        )
-                    }
-
-                    return@async list
-                }
-
-                withContext(Dispatchers.Main) {
-                    aFiles.value = asAFile.await()
-                    bFiles.value = asBFile.await()
-                }
-
+//                val aPathTmp = getRootPath(client_a.id, session)
+//                val bPathTmp = getRootPath(client_b.id, session)
+//                val aFilesTmp = getFileList(client_a.id, aPathTmp, session) as ArrayList<FileItem>
+//                val bFilesTmp = getFileList(client_b.id, bPathTmp, session) as ArrayList<FileItem>
+//
+//                withContext(Dispatchers.Main) {
+//                    aPath.value = aPathTmp
+//                    bPath.value = bPathTmp
+//                    aFiles.value = aFilesTmp
+//                    bFiles.value = bFilesTmp
+//                }
+//
 
             }
+        }
+    }
 
-            withContext(Dispatchers.Main) {
+    fun onItemClick(index: Int, item: FileItem) {
+        if (item.isFile)
+            return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            FileItemDatabase.getInstance(context).getFileItemDao().apply {
+                if (index == 0) {
+                    val tmpPath = aPath.value + "\\" + item.name
+                    val fileFut = async { getFileList(client_a.id, tmpPath, session) }
+
+                    withContext(Dispatchers.Main) {
+                        aPath.value = tmpPath
+                        aFiles.value = fileFut.await() as ArrayList<FileItem>
+                    }
+                } else if (index == 1) {
+                    val tmpPath = bPath.value + "\\" + item.name
+                    val fileFut = async { getFileList(client_b.id, tmpPath, session) }
+
+                    withContext(Dispatchers.Main) {
+                        bPath.value = tmpPath
+                        bFiles.value = fileFut.await() as ArrayList<FileItem>
+                    }
+                }
 
             }
         }

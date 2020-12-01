@@ -3,6 +3,7 @@ package org.cnsl.ftms.repository.local.entities
 import android.os.Parcelable
 import androidx.databinding.BaseObservable
 import androidx.databinding.Bindable
+import androidx.lifecycle.MutableLiveData
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
@@ -17,7 +18,7 @@ data class Client(
     var _name: String
 ) : BaseObservable(), Parcelable {
     @Ignore
-    var isAvailable: Boolean = false
+    var isAvailable = MutableLiveData<Boolean>(false)
 
     var id: String
         @Ignore @Bindable get() = _id

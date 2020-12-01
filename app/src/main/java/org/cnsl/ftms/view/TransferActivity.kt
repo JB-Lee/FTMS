@@ -35,13 +35,13 @@ class TransferActivity : AppCompatActivity() {
 
 
         binding.recyclerView1.apply {
-            adapter = FileItemAdapter(viewModel)
+            adapter = FileItemAdapter(viewModel, 0)
             layoutManager = LinearLayoutManager(super.getBaseContext())
             addItemDecoration(DividerItemDecoration(this@TransferActivity, LinearLayoutManager.VERTICAL))
         }
 
         binding.recyclerView2.apply {
-            adapter = FileItemAdapter(viewModel)
+            adapter = FileItemAdapter(viewModel, 1)
             layoutManager = LinearLayoutManager(super.getBaseContext())
             addItemDecoration(DividerItemDecoration(this@TransferActivity, LinearLayoutManager.VERTICAL))
         }

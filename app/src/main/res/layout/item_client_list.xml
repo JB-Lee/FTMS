@@ -26,7 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="10dp"
-            android:src="@drawable/ic_baseline_desktop_access_disabled_24"
+            android:src="@{ client.isAvailable ? @drawable/ic_baseline_desktop_windows_24 : @drawable/ic_baseline_desktop_access_disabled_24}"
             android:tint="@color/textDark" />
 
         <LinearLayout
