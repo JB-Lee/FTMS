@@ -20,11 +20,12 @@ class SessionContext:
     def __init__(self, transport):
         self.__transport = transport
 
-    def __enter__(self):
+    def __enter__(self) -> asyncio.transports.Transport:
         return self.__transport
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.__transport.close()
+        if self.__transport:
+            self.__transport.close()
 
 
 class TransportWrapper(asyncio.transports.Transport):
@@ -64,10 +65,16 @@ class BaseProtocol(asyncio.Protocol, metaclass=ABCMeta):
 
     def data_received(self, data: bytes) -> None:
         self.buff += data
-        if data.endswith(EOF):
-            data = self.buff[:-len(EOF)]
+
+        split = self.buff.split(b"\r\n\t\n\r")
+
+        if split[-1]:
+            self.buff = split[-1]
+        else:
             self.buff = b""
-            asyncio.create_task(self.async_data_received(data))
+
+        for x in split[:-1]:
+            asyncio.create_task(self.async_data_received(x))
 
     def eof_received(self) -> Optional[bool]:
         return super().eof_received()
@@ -130,22 +137,25 @@ class SessionProtocol(BaseProtocol):
         session_status = self.session_handler.get_session_state(session)
 
         if (session_status == SessionStatus.INVALID) and (method not in self.method_whitelist):
-            pass
+            self.session_handler.on_session_invalid()
+            return
 
         elif session_status == SessionStatus.EXPIRED:
-            pass
+            self.session_handler.on_session_expired()
+            return
 
         else:
-            pass
+            self.session_handler.on_session_ok()
 
         if result:
             await asyncio.gather(
-                *[listener.invoke(self.transport, method, session=session, is_result=True, raw=raw_data, **result)
+                *[listener.invoke(self.transport, method, session=session, is_result=True, raw=raw_data, result=result,
+                                  **result)
                   for listener in self.listeners])
 
         else:
             await asyncio.gather(
-                *[listener.invoke(self.transport, method, session=session, raw=raw_data, **params)
+                *[listener.invoke(self.transport, method, session=session, raw=raw_data, params=params, **params)
                   for listener in self.listeners])
 
         # self.transport.close()
