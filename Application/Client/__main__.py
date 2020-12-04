@@ -41,12 +41,6 @@ DATA_SERVER_PORT = config.get("data_server.port")
 COMMAND_SERVER_HOST = config.get("command_server.host")
 COMMAND_SERVER_PORT = config.get("command_server.port")
 
-print(DATA_SERVER_PORT)
-print(DATA_SERVER_HOST)
-
-print(COMMAND_SERVER_PORT)
-print(COMMAND_SERVER_HOST)
-
 
 async def main():
     loop = asyncio.get_running_loop()

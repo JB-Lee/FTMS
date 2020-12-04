@@ -13,7 +13,7 @@ class ServerListener(command.Listener):
         pass
 
     def on_close(self, ctx: asyncio.transports.Transport):
-        if self.identifier:
+        if hasattr(self, "identifier"):
             if self.identifier in self.connection:
                 self.connection.pop(self.identifier)
 
@@ -30,6 +30,17 @@ class ServerListener(command.Listener):
     def route(cls, client_id: str) -> asyncio.transports.Transport:
         transport = cls.connection.get(client_id)
         return transport
+
+    @classmethod
+    async def connection_not_found(cls, ctx: asyncio.transports.Transport, method, session):
+        ctx.write(
+            protocol.ProtocolBuilder()
+                .set_method(method)
+                .set_session(session)
+                .set_result({"is_success": False,
+                             "error": "Connection cannot found"})
+                .build()
+        )
 
 
 class DataListener(ServerListener):
@@ -48,18 +59,24 @@ class DataListener(ServerListener):
                 .build()
         )
 
-    @command.command(method="sendFile_data", command_type=CommandType.CALL)
-    async def send_file(self, ctx, header: dict, path: str, filename: str, data: bytes, **kwargs):
+    @command.command(method="default", command_type=CommandType.CALL)
+    async def default_call(self, ctx, header: dict, *args, **kwargs):
         raw_data = kwargs.get("raw")
         dst: str = header.get("to")
 
         sess = DataListener.route(dst)
-        sess.write(raw_data)
+        if sess:
+            sess.write(raw_data)
+        else:
+            await self.connection_not_found(ctx, kwargs.get("method"), kwargs.get("session"))
 
-    @command.command(method="sendFile_data", command_type=CommandType.RESULT)
-    async def send_file_result(self, ctx, header: dict, is_success: bool, **kwargs):
+    @command.command(method="default", command_type=CommandType.RESULT)
+    async def default_result(self, ctx, header: dict, *args, **kwargs):
         raw_data = kwargs.get("raw")
         src: str = header.get("from")
 
         sess = DataListener.route(src)
-        sess.write(raw_data)
+        if sess:
+            sess.write(raw_data)
+        else:
+            await self.connection_not_found(ctx, kwargs.get("method"), kwargs.get("session"))

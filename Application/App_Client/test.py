@@ -1,4 +1,5 @@
 import socket
+import threading
 import unittest
 from pprint import pprint
 
@@ -61,7 +62,6 @@ class MyTestCase(unittest.TestCase):
             )
 
             data = conn.recv(1024)
-            data = data[:-len(EOF)]
             data = bson.loads(data)
 
             print()
@@ -74,47 +74,76 @@ class MyTestCase(unittest.TestCase):
 
             globals()["ID"] = data.get("result").get("uuid")
 
-    def test_listdir(self):
-        with Connection(HOST, PORT) as conn:
-            conn.send(
-                protocol.ProtocolBuilder()
-                .set_method("listdir")
-                .set_session(ID)
-                .set_params({"header": {"from": "client-a", "to": "client-a", "requester": ID},
-                             "path": "C://Temp"})
-                .build()
-                + EOF
-            )
+    # def test_listdir(self):
+    #     with Connection(HOST, PORT) as conn:
+    #         conn.send(
+    #             protocol.ProtocolBuilder()
+    #             .set_method("listdir")
+    #             .set_session(ID)
+    #             .set_params({"header": {"from": "client-a", "to": "client-a", "requester": ID},
+    #                          "path": "C://Temp"})
+    #             .build()
+    #             + EOF
+    #         )
+    #
+    #         data = conn.recv(1024)
+    #         data = bson.loads(data)
+    #
+    #         print()
+    #         print("List Dir Test")
+    #         pprint(data)
+    #
+    #         self.assertIn("method", data)
 
-            data = conn.recv(1024)
-            data = data[:-len(EOF)]
-            data = bson.loads(data)
+    # def test_send_file(self):
+    #     with Connection(HOST, PORT) as conn:
+    #         conn.send(
+    #             protocol.ProtocolBuilder()
+    #             .set_method("sendFile")
+    #             .set_session(ID)
+    #             .set_params({"header": {"from": "client-a", "to": "client-a", "requester": ID},
+    #                          "src": {"path": "C:\\Temp", "file_name": "table.png"},
+    #                          "dst": {"path": "C:\\Temp\\test", "file_name": "ubto.png"}})
+    #             .build()
+    #             + EOF
+    #         )
+    #
+    #         data = conn.recv(1024)
+    #         data = bson.loads(data)
+    #
+    #         print()
+    #         print("Send File Test")
+    #         pprint(data)
+    #
+    #         self.assertIn("method", data)
 
-            print()
-            print("List Dir Test")
-            pprint(data)
+    def test_get_root(self):
+        def sub(x):
+            with Connection(HOST, PORT) as conn:
+                conn.send(
+                    protocol.ProtocolBuilder()
+                    .set_method("get_root")
+                    .set_session(ID + str(x))
+                    .set_params({"header": {"from": "client-a", "requester": ID + str(x)}})
+                    .build()
+                    + EOF
+                )
 
-            self.assertIn("method", data)
+                data = conn.recv(1024)
+                data = bson.loads(data)
 
-    def test_send_file(self):
-        with Connection(HOST, PORT) as conn:
-            conn.send(
-                protocol.ProtocolBuilder()
-                .set_method("sendFile")
-                .set_session(ID)
-                .set_params({"header": {"from": "client-a", "to": "client-a", "requester": ID},
-                             "src": {"path": "C:\\Temp", "file_name": "table.png"},
-                             "dst": {"path": "C:\\Temp\\test", "file_name": "ubto.png"}})
-                .build()
-                + EOF
-            )
+                print()
+                print("Get Root Test")
+                pprint(data)
 
-            data = conn.recv(1024)
-            data = data[:-len(EOF)]
-            data = bson.loads(data)
+                self.assertIn("method", data)
 
-            print()
-            print("Send File Test")
-            pprint(data)
+        for x in range(20):
+            threading.Thread(target=sub, args=(x,)).start()
 
-            self.assertIn("method", data)
+
+def get_data(conn: socket.socket) -> dict:
+    data = conn.recv(1024)
+    data = data[:-len(EOF)]
+    data = bson.loads(data)
+    return data

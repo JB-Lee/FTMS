@@ -1,5 +1,6 @@
 import asyncio
 import os
+from stat import S_ISREG
 
 from ftms_lib import command, protocol
 from ftms_lib.command import CommandType
@@ -45,7 +46,7 @@ class DataListener(ClientListener):
 
     @command.command(method="connect", command_type=CommandType.RESULT)
     async def connect_result(self, ctx, is_success: bool, **kwargs):
-        print(is_success)
+        pass
 
     @command.command(method="sendFile_data", command_type=CommandType.CALL)
     async def send_file(self, ctx: asyncio.transports.Transport, header: dict, path: str, filename: str,
@@ -145,4 +146,26 @@ class CommandListener(ClientListener):
                 .build()
         )
 
-        print(path)
+    @command.command(method="get_dir", command_type=CommandType.CALL)
+    async def get_dir(self, ctx: asyncio.transports.Transport, header: dict, path: str, **kwargs):
+        ctx.write(
+            protocol.ProtocolBuilder()
+                .set_method("listdir")
+                .set_session(None)
+                .set_result({"header": header,
+                             "dirs": [{"name": name, "size": st.st_size, "is_file": S_ISREG(st.st_mode),
+                                       "last_modified": int(st.st_ctime)} for
+                                      (name, st) in [(x, os.stat(path + "/" + x)) for x in os.listdir(path)]]})
+                .build()
+        )
+
+    @command.command(method="get_root", command_type=CommandType.CALL)
+    async def get_root(self, ctx: asyncio.transports.Transport, header: dict, **kwargs):
+        ctx.write(
+            protocol.ProtocolBuilder()
+                .set_method("get_root")
+                .set_session(None)
+                .set_result({"header": header,
+                             "cwd": "C://Temp"})
+                .build()
+        )

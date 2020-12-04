@@ -5,6 +5,8 @@ from typing import Optional
 from ftms_lib import command, protocol, SessionContext
 from ftms_lib.command import CommandType
 
+LOCK = asyncio.Lock()
+
 
 class ServerListener(command.Listener):
     connection: dict
@@ -14,7 +16,7 @@ class ServerListener(command.Listener):
         pass
 
     def on_close(self, ctx: asyncio.transports.Transport):
-        if self.identifier:
+        if hasattr(self, "identifier"):
             if self.identifier in self.connection:
                 self.connection.pop(self.identifier)
 
@@ -28,9 +30,20 @@ class ServerListener(command.Listener):
         pass
 
     @classmethod
-    def route(cls, client_id: str) -> asyncio.transports.Transport:
+    async def route(cls, client_id: str) -> asyncio.transports.Transport:
         transport = cls.connection.get(client_id)
         return transport
+
+    @classmethod
+    async def connection_not_found(cls, ctx: asyncio.transports.Transport, method, session):
+        ctx.write(
+            protocol.ProtocolBuilder()
+                .set_method(method)
+                .set_session(session)
+                .set_result({"is_success": False,
+                             "error": "Connection cannot found"})
+                .build()
+        )
 
 
 class ClientCommandListener(ServerListener):
@@ -42,6 +55,7 @@ class ClientCommandListener(ServerListener):
     @command.command(method="connect", command_type=CommandType.CALL)
     async def connect(self, ctx, user, pw, **kwargs):
         self.identifier = user
+
         self.connection[user] = ctx
 
         ctx.write(
@@ -52,53 +66,51 @@ class ClientCommandListener(ServerListener):
                 .build()
         )
 
-    @command.command(method="sendFile", command_type=CommandType.RESULT)
-    async def send_file_result(self, ctx, header: dict, is_success: bool, **kwargs):
+    @command.command(method="default", command_type=CommandType.RESULT)
+    async def default_result(self, ctx, session, header, *args, **kwargs):
         raw_data = kwargs.get("raw")
         app_id = header.get("requester")
 
-        with SessionContext(AppCommandListener.route(app_id)) as sess:
-            sess.write(raw_data)
-
-    @command.command(method="listdir", command_type=CommandType.RESULT)
-    async def list_dir_result(self, ctx, header: dict, dirs: list, **kwargs):
-        raw_data = kwargs.get("raw")
-        app_id = header.get("requester")
-
-        with SessionContext(AppCommandListener.route(app_id)) as sess:
-            sess.write(raw_data)
+        with SessionContext(await AppCommandListener.route(app_id)) as sess:
+            if sess:
+                sess.write(raw_data)
+            else:
+                await self.connection_not_found(ctx, kwargs.get("method"), session)
 
 
 class AppCommandListener(ServerListener):
     connection: dict = dict()
+    counter: int = 0
 
-    def register_session(self, ctx, session):
+    @classmethod
+    def count(cls):
+        cls.counter += 1
+        if cls.counter > 10000:
+            cls.counter = 0
+        return cls.counter
+
+    async def register_session(self, ctx, session: str):
+        # session = f"{session}_{self.count()}"
         self.identifier = session
         self.connection[session] = ctx
+        return session
 
-    @command.command(method="sendFile", command_type=CommandType.CALL)
-    async def send_file(self, ctx, session, header: dict, src: dict, dst: dict, **kwargs):
-        self.register_session(ctx, session)
+    @command.command(method="default", command_type=CommandType.CALL)
+    async def default_command(self, ctx, session, header, *args, **kwargs):
+        await self.register_session(ctx, session)
 
-        raw_data = kwargs.get("raw")
         client_id = header.get("from")
 
-        sess = ClientCommandListener.route(client_id)
-        sess.write(raw_data)
-
-    @command.command(method="listdir", command_type=CommandType.CALL)
-    async def list_dir(self, ctx, session, header: dict, path: str, **kwargs):
-        self.register_session(ctx, session)
-
         raw_data = kwargs.get("raw")
-        client_id = header.get("from")
 
-        sess = ClientCommandListener.route(client_id)
-        sess.write(raw_data)
+        sess = await ClientCommandListener.route(client_id)
+        if sess:
+            sess.write(raw_data)
+        else:
+            await self.connection_not_found(ctx, kwargs.get("method"), session)
 
     @command.command(method="getUuid", command_type=CommandType.CALL)
     async def get_uuid(self, ctx, session, **kwargs):
-        self.register_session(ctx, session)
 
         with SessionContext(ctx) as sess:
             sess.write(
@@ -106,5 +118,16 @@ class AppCommandListener(ServerListener):
                     .set_method("getUuid")
                     .set_session(None)
                     .set_result({"uuid": str(uuid.uuid4())})
+                    .build()
+            )
+
+    @command.command(method="ping", command_type=CommandType.CALL)
+    async def ping(self, ctx, session, client, **kwargs):
+        with SessionContext(ctx) as sess:
+            sess.write(
+                protocol.ProtocolBuilder()
+                    .set_method("ping")
+                    .set_session(None)
+                    .set_result({"is_success": True if await ClientCommandListener.route(client) else False})
                     .build()
             )
