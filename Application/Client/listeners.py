@@ -1,9 +1,26 @@
 import asyncio
+import functools
 import os
+import zlib
 from stat import S_ISREG
 
 from ftms_lib import command, protocol
 from ftms_lib.command import CommandType
+
+
+def write_file(filepath, data):
+    try:
+        with open(filepath, "wb") as f:
+            f.write(zlib.decompress(data))
+            return True
+    except:
+        return False
+
+
+def read_file(filepath):
+    with open(filepath, "rb") as f:
+        data = zlib.compress(f.read())
+        return data
 
 
 class ClientListener(command.Listener):
@@ -59,24 +76,17 @@ class DataListener(ClientListener):
             # TODO 중복 파일 처리
             pass
 
-        try:
-            with open(filepath, "wb") as f:
-                f.write(data)
-                success = True
+        loop = asyncio.get_running_loop()
+        success = await loop.run_in_executor(None, functools.partial(write_file, filepath, data))
 
-        except Exception as e:
-            self.logger.critical(f"error: {e}")
-            success = False
-
-        finally:
-            self.command_ctx.write(
-                protocol.ProtocolBuilder()
-                    .set_method("sendFile")
-                    .set_session(None)
-                    .set_result({"header": header,
-                                 "is_success": success})
-                    .build()
-            )
+        self.command_ctx.write(
+            protocol.ProtocolBuilder()
+                .set_method("sendFile")
+                .set_session(None)
+                .set_result({"header": header,
+                             "is_success": success})
+                .build()
+        )
 
     @command.command(method="sendFile", command_type=CommandType.RESULT)
     async def send_file_result(self, ctx: asyncio.transports.Transport, header, is_success, **kwargs):
@@ -101,8 +111,8 @@ class CommandListener(ClientListener):
         dst_file_name = dst.get("file_name")
 
         if os.path.exists(src_file_path) and os.path.isfile(src_file_path):
-            with open(src_file_path, "rb") as f:
-                data = f.read()
+            loop = asyncio.get_running_loop()
+            data = await loop.run_in_executor(None, functools.partial(read_file, src_file_path))
 
             self.data_ctx.write(
                 protocol.ProtocolBuilder()
