@@ -26,7 +26,7 @@ class ServerListener(command.Listener):
     def on_receive(self, ctx: asyncio.transports.Transport, data: bytes):
         pass
 
-    async def on_command(self, ctx: asyncio.transports.Transport, *args, **kwargs):
+    def on_command(self, ctx: asyncio.transports.Transport, *args, **kwargs):
         pass
 
     @classmethod
@@ -111,7 +111,6 @@ class AppCommandListener(ServerListener):
 
     @command.command(method="getUuid", command_type=CommandType.CALL)
     async def get_uuid(self, ctx, session, **kwargs):
-
         with SessionContext(ctx) as sess:
             sess.write(
                 protocol.ProtocolBuilder()

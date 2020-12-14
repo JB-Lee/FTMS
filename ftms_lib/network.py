@@ -64,17 +64,18 @@ class BaseProtocol(asyncio.Protocol, metaclass=ABCMeta):
         return await self.is_conn_lost
 
     def data_received(self, data: bytes) -> None:
-        self.buff += data
-
-        split = self.buff.split(b"\r\n\t\n\r")
-
-        if split[-1]:
-            self.buff = split[-1]
-        else:
-            self.buff = b""
-
-        for x in split[:-1]:
-            asyncio.create_task(self.async_data_received(x))
+        asyncio.create_task(self.async_data_received(data))
+        # self.buff += data
+        #
+        # split = self.buff.split(b"\r\n\t\n\r")
+        #
+        # if split[-1]:
+        #     self.buff = split[-1]
+        # else:
+        #     self.buff = b""
+        #
+        # for x in split[:-1]:
+        #     asyncio.ensure_future(self.async_data_received(x))
 
     def eof_received(self) -> Optional[bool]:
         return super().eof_received()
@@ -98,6 +99,18 @@ class BaseProtocol(asyncio.Protocol, metaclass=ABCMeta):
         logger.info(f"connection lost: {self.peer_name}")
 
     async def async_data_received(self, data: bytes):
+        self.buff += data
+
+        split = self.buff.split(b"\r\n\t\n\r")
+
+        if split[-1]:
+            self.buff = split[-1]
+        else:
+            self.buff = b""
+
+        await asyncio.gather(*[self.pre_command(x) for x in split[:-1]])
+
+    async def pre_command(self, data):
         if len(self.listeners) <= 0:
             await self.is_listener_register
 
@@ -134,7 +147,7 @@ class SessionProtocol(BaseProtocol):
 
         logger.debug(f"method: {method} | session: {session} | params: {params} | result: {result}")
 
-        session_status = self.session_handler.get_session_state(session)
+        session_status = await self.session_handler.get_session_state(session)
 
         if (session_status == SessionStatus.INVALID) and (method not in self.method_whitelist):
             self.session_handler.on_session_invalid()
