@@ -5,8 +5,6 @@ from typing import Optional
 from ftms_lib import command, protocol, SessionContext
 from ftms_lib.command import CommandType
 
-LOCK = asyncio.Lock()
-
 
 class ServerListener(command.Listener):
     connection: dict

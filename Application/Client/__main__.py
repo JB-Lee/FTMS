@@ -1,9 +1,8 @@
 import asyncio
 import logging
 
-import listeners
-
 import ftms_lib
+import listeners
 from ftms_lib import utils
 
 logging.basicConfig(level=logging.DEBUG)
@@ -23,7 +22,9 @@ DEFAULT_CONFIG = {
     "command_server": {
         "host": "0.0.0.0",
         "port": 8089
-    }
+    },
+
+    "directory": "C:\\Users"
 
 }
 
@@ -40,6 +41,8 @@ DATA_SERVER_PORT = config.get("data_server.port")
 
 COMMAND_SERVER_HOST = config.get("command_server.host")
 COMMAND_SERVER_PORT = config.get("command_server.port")
+
+DIRECTORY = config.get("directory")
 
 
 async def main():
@@ -60,7 +63,7 @@ async def main():
     )
 
     if isinstance(cmd_proto, ftms_lib.ContinuousProtocol):
-        cmd_proto.register_listener(listeners.CommandListener(data_t, ID, PW))
+        cmd_proto.register_listener(listeners.CommandListener(data_t, ID, PW, DIRECTORY))
 
     if isinstance(data_proto, ftms_lib.ContinuousProtocol):
         data_proto.register_listener(listeners.DataListener(cmd_t, ID, PW))

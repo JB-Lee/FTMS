@@ -97,9 +97,10 @@ class DataListener(ClientListener):
 class CommandListener(ClientListener):
     data_ctx: asyncio.transports.Transport
 
-    def __init__(self, data_ctx, user: str, pw: str):
+    def __init__(self, data_ctx, user: str, pw: str, root_dir: str):
         super(CommandListener, self).__init__(user, pw)
         self.data_ctx = data_ctx
+        self.root_dir = root_dir
 
     @command.command(method="sendFile", command_type=CommandType.CALL)
     async def send_file(self, ctx: asyncio.transports.Transport, header: dict, src: dict, dst: dict, **kwargs):
@@ -176,6 +177,6 @@ class CommandListener(ClientListener):
                 .set_method("get_root")
                 .set_session(None)
                 .set_result({"header": header,
-                             "cwd": "C://Temp"})
+                             "cwd": self.root_dir})
                 .build()
         )

@@ -18,4 +18,7 @@ setup(name='ftms_lib',
       classifiers=[
           'Programming Language :: Python :: 3.8',
       ],
+      install_reqires=[
+          'bson~=0.5.10'
+      ],
       zip_safe=False)
